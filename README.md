@@ -25,16 +25,23 @@ In your project's Gruntfile, add a section named `marsRev` to the data object pa
 ```js
 grunt.initConfig({
   marsRev: {
-    options: {
-        require: {
-            'requireJsPath': 'build/lib/tiny/tiny-lib/require.js',
-            'dataMainPath': 'build/main.js',
-            'configJSON': 'main.json',
-            'accessHtml': 'build/index.html'
-        },
-        cwd: 'build',
-        files: [{src: '/'}]
-    }
+     default_options: {
+        options: {
+          hash: {
+              'algorithm': 'md5',
+              'inputEncoding': 'utf8',
+              'length': 4
+          },
+          require: {
+              'requireJsPath': 'build/lib/tiny/tiny-lib/require.js',
+              'dataMainPath': 'build/main.js',
+              'configJSON': 'main.json',
+              'accessHtml': 'build/index.html'
+          },
+          cwd: 'build',
+          files: [{src: '/'}]
+       }
+     }
   }
 });
 ```
@@ -46,9 +53,9 @@ Type: `Object`
 Default value:
 ```json
 hash: {
-    algorithm: 'md5',             //hash算法
-    inputEncoding: 'utf8',        //文件编码
-    length: 4                     //hash命名的长度
+    algorithm: 'md5',
+    inputEncoding: 'utf8',
+    length: 4
 }
 ```
 
@@ -77,7 +84,8 @@ In this example, the default options are used to do something with whatever. So 
 ```js
 grunt.initConfig({
   marsRev: {
-    options: {
+    default_options: {
+      options: {
         require: {
             'requireJsPath': 'build/lib/tiny/tiny-lib/require.js',
             'dataMainPath': 'build/main.js',
@@ -86,7 +94,8 @@ grunt.initConfig({
         },
         cwd: 'build',
         files: [{src: '/'}]
-    }
+     }
+   }
   }
 });
 ```
@@ -97,20 +106,22 @@ In this example, custom options are used to do something else with whatever else
 ```js
 grunt.initConfig({
   marsRev: {
-     options: {
-        hash: {
-            'algorithm': 'md5',
-            'inputEncoding': 'utf8',
-            'length': 4
-        },
-        require: {
-            'requireJsPath': 'build/lib/tiny/tiny-lib/require.js',
-            'dataMainPath': 'build/main.js',
-            'configJSON': 'main.json',
-            'accessHtml': 'build/index.html'
-        },
-        cwd: 'build',
-        files: [{src: '/'}]
+     default_options: {
+        options: {
+          hash: {
+              'algorithm': 'md5',
+              'inputEncoding': 'utf8',
+              'length': 4
+          },
+          require: {
+              'requireJsPath': 'build/lib/tiny/tiny-lib/require.js',
+              'dataMainPath': 'build/main.js',
+              'configJSON': 'main.json',
+              'accessHtml': 'build/index.html'
+          },
+          cwd: 'build',
+          files: [{src: '/'}]
+       }
      }
   }
 });
