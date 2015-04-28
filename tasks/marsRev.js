@@ -592,19 +592,20 @@ var deal = function (options, grunt) {
             self.replaceDependencyPath(result.originPath, result.hashPath);
         });
 
-
         //处理require data-main, 待优化TODO
-        try {
-            var dataMainDepObj = this.dependenciesMap[this.options.require.dataMainPath];
-            var accessHtmlDepObj = this.dependenciesMap[this.options.require.accessHtml];
-            var contents = read(accessHtmlDepObj.hashFilePath);
-            write(accessHtmlDepObj.hashFilePath, contents.replace(
-                new RegExp('(data-main\\s*=\\s*["|\']\\s*)' + '(main)' + '\\s*("|\')', 'ig'),
-                    '$1' + path.basename(dataMainDepObj.hashFilePath, ".js") + '$3'
-            ));
-        }
-        catch (e) {
-            grunt.fail.warn("modify require.js data-main config fai, e=", e);
+        if (this.options.require.dataMainPath !== null) {
+            try {
+                var dataMainDepObj = this.dependenciesMap[this.options.require.dataMainPath];
+                var accessHtmlDepObj = this.dependenciesMap[this.options.require.accessHtml];
+                var contents = read(accessHtmlDepObj.hashFilePath);
+                write(accessHtmlDepObj.hashFilePath, contents.replace(
+                    new RegExp('(data-main\\s*=\\s*["|\']\\s*)' + '(main)' + '\\s*("|\')', 'ig'),
+                        '$1' + path.basename(dataMainDepObj.hashFilePath, ".js") + '$3'
+                ));
+            }
+            catch (e) {
+                grunt.fail.warn("modify require.js data-main config fai, e=", e);
+            }
         }
     }
 };
@@ -612,7 +613,7 @@ var deal = function (options, grunt) {
 module.exports = function (grunt) {
     // Please see the Grunt documentation for more information regarding task
     // creation: http://gruntjs.com/creating-tasks
-    grunt.registerMultiTask('marsRev', 'file hash rename', function () {
+    grunt.registerTask('marsRev', 'file hash rename', function () {
         // Merge task-specific and/or target-specific options with these defaults.
         var defaultConfig = {
             'hash': {
@@ -626,7 +627,6 @@ module.exports = function (grunt) {
         if (options.cwd === undefined) {
             grunt.fail.warn("cwd is undefined.");
         }
-        grunt.log.writeln(JSON.stringify(options));
         var dealInstance = new deal(options, grunt);
         dealInstance.deal();
         grunt.log.ok('success hashed file');

@@ -25,23 +25,21 @@ In your project's Gruntfile, add a section named `marsRev` to the data object pa
 ```js
 grunt.initConfig({
   marsRev: {
-     default_options: {
-        options: {
-          hash: {
-              'algorithm': 'md5',
-              'inputEncoding': 'utf8',
-              'length': 4
-          },
-          require: {
-              'requireJsPath': 'build/lib/tiny/tiny-lib/require.js',
-              'dataMainPath': 'build/main.js',
-              'configJSON': 'main.json',
-              'accessHtml': 'build/index.html'
-          },
-          cwd: 'build',
-          files: [{src: '/'}]
-       }
-     }
+     options: {
+       hash: {
+           'algorithm': 'md5',
+           'inputEncoding': 'utf8',
+           'length': 4
+       },
+       require: {
+           'requireJsPath': 'build/lib/tiny/tiny-lib/require.js',
+           'dataMainPath': 'build/main.js',
+           'configJSON': 'main.json',
+           'accessHtml': 'build/index.html'
+       },
+       cwd: 'build',
+       files: [{src: '/'}]
+    }
   }
 });
 ```
@@ -52,10 +50,10 @@ grunt.initConfig({
 Type: `Object`
 Default value:
 ```json
-hash: {
-    algorithm: 'md5',
-    inputEncoding: 'utf8',
-    length: 4
+"hash": {
+    "algorithm": "md5",
+    "inputEncoding": "utf8",
+    "length": 4
 }
 ```
 
@@ -78,14 +76,18 @@ the directories of hash files, relative to cwd
 
 ### Usage Examples
 
-#### Default Options
-In this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`
+#### Custom Options
+In this example, custom options are used to do something else with whatever else.
 
 ```js
 grunt.initConfig({
   marsRev: {
-    default_options: {
       options: {
+        hash: {
+            'algorithm': 'md5',
+            'inputEncoding': 'utf8',
+            'length': 4
+        },
         require: {
             'requireJsPath': 'build/lib/tiny/tiny-lib/require.js',
             'dataMainPath': 'build/main.js',
@@ -94,34 +96,6 @@ grunt.initConfig({
         },
         cwd: 'build',
         files: [{src: '/'}]
-     }
-   }
-  }
-});
-```
-
-#### Custom Options
-In this example, custom options are used to do something else with whatever else.
-
-```js
-grunt.initConfig({
-  marsRev: {
-     default_options: {
-        options: {
-          hash: {
-              'algorithm': 'md5',
-              'inputEncoding': 'utf8',
-              'length': 4
-          },
-          require: {
-              'requireJsPath': 'build/lib/tiny/tiny-lib/require.js',
-              'dataMainPath': 'build/main.js',
-              'configJSON': 'main.json',
-              'accessHtml': 'build/index.html'
-          },
-          cwd: 'build',
-          files: [{src: '/'}]
-       }
      }
   }
 });

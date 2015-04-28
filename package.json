@@ -1,7 +1,7 @@
 {
     "name": "grunt-marsrev",
     "description": "file hash rename",
-    "version": "1.0.5",
+    "version": "1.0.0",
     "homepage": "https://github.com/tdp100/grunt-marsrev",
     "author": {
         "name": "tangdeping",

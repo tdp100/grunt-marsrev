@@ -29,24 +29,22 @@ module.exports = function (grunt) {
 
         // Configuration to be run (and then tested).
         marsRev: {
-            default_options: {
-                options: {
-                    hash: {
-                        algorithm: 'md5',             //hash算法
-                        inputEncoding: 'utf8',        //文件编码
-                        length: 4                     //hash命名的长度
-                    },
-                    require: {
-                        requireJsPath: 'build/lib/tiny/tiny-lib/require.js', //require.js的路径
-                        dataMainPath: 'build/main.js',   //data-main 文件的路径
-                        configJSON: 'tmp/main.json',         //require.config中的配置提取到单独的json文件中
-                        accessHtml: 'build/index.html'   //引入require.js的html文件
-                    },
-                    cwd: 'build',                       //必填, 要hash的所有文件的目录名
-                    files: [
-                        {src: './'}
-                    ]
-                }
+            options: {
+                hash: {
+                    algorithm: 'md5',             //hash算法
+                    inputEncoding: 'utf8',        //文件编码
+                    length: 4                     //hash命名的长度
+                },
+                require: {
+                    requireJsPath: 'build/lib/tiny/tiny-lib/require.js', //require.js的路径
+                    dataMainPath: 'build/main.js',   //data-main 文件的路径
+                    configJSON: 'tmp/main.json',     //require.config中的配置提取到单独的json文件中
+                    accessHtml: 'build/index.html'   //引入require.js的html文件
+                },
+                cwd: 'build',                       //必填, 要hash的所有文件的目录名
+                files: [
+                    {src: './'}
+                ]
             }
         }
     });
