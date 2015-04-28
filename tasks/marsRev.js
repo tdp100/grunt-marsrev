@@ -45,15 +45,13 @@ var deal = function (options, grunt) {
     var dependenciesPattern = new RegExp('(dependencies\\s*(:|=)\\s*\\[\\s*(' + dependencyPathPattern.source + '\\s*,?\\s*)*\\]\\s*)|(dependencies\\s*\\.\\s*push\\(\\s*(' + dependencyPathPattern.source + '\\s*,?\\s*)*)', 'ig');
     // e.g. dependencies: ['css!../~','~']... dependencies = ['css!../~','~']... dependencies.push('~');
 
-    var urlPattern = new RegExp('[\'|"]*[a-zA-Z0-9-_/.]+[\'|"]*');
-    // e.g. ./fonts/flaticon.svg
-    var cssUrlPattern = new RegExp('url\\s*\\(\\s*(' + urlPattern.source + ')\\s*\\)', 'ig');
+    var cssUrlPattern = new RegExp('url\\s*\\(\\s*(' + dependencyPathPattern.source + ')\\s*\\)', 'ig');
     // e.g. url("./fonts/flaticon.svg")  or url('./fonts/flaticon.svg') or url(./fonts/flaticon.svg)
     var resourceUrlPattern = new RegExp('(href|src)\\s*=\\s*(' + dependencyPathPattern.source + ')\\s*', 'ig');
 
 
     //以下是对nezha框架中的lazy-load/lazyLoad.js加载机制中的文件路径正则表达式的书写，用于提出出相应的依赖
-    var templateUrlPattern = new RegExp('[\'|"]*templateUrl[\'|"]*\\s*:\\s*(' + urlPattern.source + ')\\s*', 'ig');
+    var templateUrlPattern = new RegExp('(\'|")templateUrl(\'|")\\s*:\\s*(' + dependencyPathPattern.source + ')\\s*', 'ig');
     // e.g. templateUrl: "src/app/business/home/views/home.html",
 
     var directivesPattern = new RegExp('(\'|")directives(\'|")\\s*:\\s*\\[\\s*(' + dependencyPathPattern.source + '\\s*,?\\s*)*\\s*\\]', 'ig');
@@ -73,7 +71,7 @@ var deal = function (options, grunt) {
     //lazy-load  结束
 
     //定义规则，业务需要，在js中定义的文件路径变量
-    var fileUrlPattern = new RegExp('(\'|")*url(\'|")*\\s*:\\s*(' + dependencyPathPattern.source + ')', 'ig');
+    var fileUrlPattern = new RegExp('(\'|")url(\'|")\\s*:\\s*(' + dependencyPathPattern.source + ')', 'ig');
 
     /**
      * 将windows格式的路径转化为linux格式的路径
@@ -343,7 +341,7 @@ var deal = function (options, grunt) {
             if (fileItem === targetPath) {
                 continue;
             }
-            if (/(.js|.css|.html|)/.test(path.extname(fileItem)) === false) {
+            if (/(.js|.css|.html)/.test(path.extname(fileItem)) === false) {
                 continue;
             }
             var fileItemObj = this.dependenciesMap[fileItem];
@@ -437,11 +435,8 @@ var deal = function (options, grunt) {
 
                 if (templateUrlMatches) {
                     templateUrlMatches.forEach(function (templateUrlMatch) {
-                        var pathMatches = templateUrlPattern.exec(templateUrlMatch);
-                        cssUrlPattern.lastIndex = 0;  // Reset
-                        if (pathMatches && pathMatches.length > 1) {
-                            dependencies = dependencies.concat(pathMatches[1]);
-                        }
+                        var pathMatches = templateUrlMatch.match(dependencyPathPattern);
+                        dependencies = dependencies.concat(pathMatches);
                     });
                 }
 
@@ -528,11 +523,8 @@ var deal = function (options, grunt) {
                 grunt.log.writeln('url matches: %s', urlMatches);
                 if (urlMatches) {
                     urlMatches.forEach(function (urlMatch) {
-                        var pathMatches = cssUrlPattern.exec(urlMatch);
-                        cssUrlPattern.lastIndex = 0;  // Reset
-                        if (pathMatches && pathMatches.length > 1) {
-                            dependencies = dependencies.concat(pathMatches[1]);
-                        }
+                        var pathMatches = urlMatch.match(dependencyPathPattern);
+                        dependencies = dependencies.concat(pathMatches);
                     });
                 }
             }
