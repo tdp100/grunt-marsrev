@@ -384,9 +384,9 @@ var deal = function (options, grunt) {
     this.getDependenciesMap = function () {
         var self = this;
         var targetFiles = this.files;
-        grunt.log.writeln('\nTarget files: %s', targetFiles.join('\n'));
         var dependenciesMap = {};
         targetFiles.forEach(function (targetPath) {
+            grunt.log.writeln('Search Dependencies of targetPath: %s', targetPath);
             var contents = read(targetPath);
             var defineMatches = contents.match(definePattern);
             var requireMatches = contents.match(requirePattern);
