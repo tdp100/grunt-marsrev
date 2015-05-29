@@ -71,7 +71,7 @@ var deal = function (options, grunt) {
     //lazy-load  结束
 
     //定义规则，业务需要，在js中定义的文件路径变量
-    var fileUrlPattern = new RegExp('(\'|")url(\'|")\\s*:\\s*(' + dependencyPathPattern.source + ')', 'ig');
+    var fileUrlPattern = new RegExp('(\'|")(url|content)(\'|")\\s*:\\s*(' + dependencyPathPattern.source + ')', 'ig');
 
     /**
      * 将windows格式的路径转化为linux格式的路径
