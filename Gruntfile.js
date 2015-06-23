@@ -1,6 +1,6 @@
 /*
- * grunt-marsRev
- * https://github.com/tdp100/grunt-marsRev
+ * grunt-marsrev
+ * https://github.com/tdp100/grunt-marsrev
  *
  * Copyright (c) 2015 tangdeping
  * Licensed under the MIT license.
