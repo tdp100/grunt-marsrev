@@ -630,14 +630,14 @@ var deal = function (options, grunt) {
                     getFiles(parseLinuxPath(path.join(self.options.cwd, src)), targetFiles);
                 }
             });
-            for(var i=0; i<excludeFiles.length; i++) {
-                var target = excludeFiles[i];
-                var indexOfNext = targetFiles.indexOf(target);
-                if (indexOfNext > 0) {
-                    targetFiles.splice(indexOfNext, 1);
-                }
-            }
         });
+        for(var i=0; i<excludeFiles.length; i++) {
+            var target = excludeFiles[i];
+            var indexOfNext = targetFiles.indexOf(target);
+            if (indexOfNext >= 0) {
+                targetFiles.splice(indexOfNext, 1);
+            }
+        }
         targetFiles.forEach(function (targetFile) {
             var result = self.renameHashNameForFile(targetFile);
             for(var i=0; i< result.length; i++) {
