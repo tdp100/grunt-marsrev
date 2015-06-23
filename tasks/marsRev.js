@@ -268,13 +268,56 @@ var deal = function (options, grunt) {
         grunt.log.writeln('Rename ' + targetPath + ' to ' + targetPathNew + '...');
 
         // rename file (adding hash prefix)
-        fs.renameSync(targetPath, targetPathNew);
-        this.dependenciesMap[targetPath].hashFilePath = targetPathNew;
-        return {
-            originPath: targetPath,
-            hashPath: targetPathNew
-        }
+        return this.syncRenameFile(targetPath, prefix);
     };
+
+    /**
+     * 修改文件名称，这里有一个特殊场景：给i18n文件进行哈希，由于i18n会动态根据语言信息加载不同的i18n文件，我们这里约定hash zh时同步修改其它语言文件名，保证hash值是一样的。这一会影响升级，原因是升级时一般都会同步变化
+     * @param targetPath
+     * @param prefix
+     * @returns {*}
+     */
+    this.syncRenameFile = function(targetPath, prefix) {
+        var self = this;
+        //判断是否是i18n文件
+        var originName = path.basename(targetPath);
+        var baseDirName = path.dirname(targetPath);
+        var originPath = '';
+        var targetPathNew = '';
+
+        var result = [];
+        if(/i18n\/.+\/.+/.test(targetPath)) {
+            //获取i18n下所有的语言子目录
+            var files = fs.readdirSync(parseLinuxPath(path.join(baseDirName, '../')));
+            console.log("files baseDirName = ", baseDirName);
+            console.log(files);
+            for (var i = 0; i < files.length; i++) {
+                if (fs.statSync(parseLinuxPath(path.join(baseDirName, '../' + files[i]))).isDirectory()) {
+                    originPath = parseLinuxPath(path.join(baseDirName, '../' + files[i] + '/' + originName));
+                    targetPathNew = parseLinuxPath(path.join(baseDirName, '../' + files[i] + '/' + prefix + '.' + originName));
+                    fs.renameSync(originPath, targetPathNew);
+
+                    self.dependenciesMap[originPath].hashFilePath = targetPathNew;
+                    result.push({
+                        originPath: originPath,
+                        hashPath: targetPathNew
+                    });
+                }
+            }
+        }
+        else {
+            targetPathNew = parseLinuxPath(path.join(baseDirName, prefix + '.' + originName));
+            fs.renameSync(targetPath, targetPathNew);
+
+            self.dependenciesMap[targetPath].hashFilePath = targetPathNew;
+            result.push({
+                originPath: targetPath,
+                hashPath: targetPathNew
+            });
+        }
+
+        return result;
+    }
 
     /**
      * 从fileItem的依赖Map中搜索是否依赖了targetPath文件
@@ -576,12 +619,32 @@ var deal = function (options, grunt) {
         this.getDependenciesMap();
 
         var targetFiles = [];
+        var excludeFiles = [];
         this.options.files.forEach(function (filePair) {
-            targetFiles = getFiles(parseLinuxPath(path.join(self.options.cwd, filePair.src)));
+            filePair.src.forEach(function (src) {
+                if( src && src.indexOf("!") === 0) {
+                    src = src.substring(1);
+                    getFiles(parseLinuxPath(path.join(self.options.cwd, src)), excludeFiles);
+                }
+                else {
+                    getFiles(parseLinuxPath(path.join(self.options.cwd, src)), targetFiles);
+                }
+            });
+            for(var i=0; i<excludeFiles.length; i++) {
+                var target = excludeFiles[i];
+                var indexOfNext = targetFiles.indexOf(target);
+                if (indexOfNext > 0) {
+                    targetFiles.splice(indexOfNext, 1);
+                }
+            }
         });
         targetFiles.forEach(function (targetFile) {
             var result = self.renameHashNameForFile(targetFile);
-            self.replaceDependencyPath(result.originPath, result.hashPath);
+            for(var i=0; i< result.length; i++) {
+                if(result[i]) {
+                    self.replaceDependencyPath(result[i].originPath, result[i].hashPath);
+                }
+            }
         });
 
         //处理require data-main, 待优化TODO
