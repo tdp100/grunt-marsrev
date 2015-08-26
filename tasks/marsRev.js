@@ -165,21 +165,22 @@ var deal = function (options, grunt) {
 
     var getFiles = function (dir, files_) {
         files_ = files_ || [];
-        var files = fs.readdirSync(dir);
-        for (var i in files) {
-            var name = '';
-            if (dir[dir.length - 1] === '/') {
-                name = dir + files[i];
-            }
-            else {
-                name = dir + posix_sep + files[i];
-            }
-            if (fs.statSync(name).isDirectory()) {
+        if(fs.statSync(dir).isDirectory()) {
+            var files = fs.readdirSync(dir);
+            for (var i in files) {
+                var name = '';
+                if (dir[dir.length - 1] === '/') {
+                    name = dir + files[i];
+                }
+                else {
+                    name = dir + posix_sep + files[i];
+                }
                 getFiles(name, files_);
-            } else {
-                files_.push(name);
             }
+        } else {
+            files_.push(dir);
         }
+
         return files_;
     };
 
@@ -406,7 +407,7 @@ var deal = function (options, grunt) {
                 grunt.log.writeln('in fileItemObj.hashFilePath =%s, replace dependencyMatch=%s to replacePath=%s', fileItemObj.hashFilePath, dependencyMatch, replacePath);
                 write(fileItemObj.hashFilePath, contents.replace(
                     new RegExp('("|\')' + '(' + dependencyMatch + ')' + '("|\')', 'ig'),
-                        '$1' + replacePath + '$3'
+                    '$1' + replacePath + '$3'
                 ));
             }
         }
@@ -438,169 +439,173 @@ var deal = function (options, grunt) {
 
             // dependency path array
             var dependencies = [];
-            if (defineMatches) {
-                defineMatches.forEach(function (defineMatch) {
-                    var pathMatches = defineMatch.match(dependencyPathPattern);
-                    if (pathMatches) {
-                        dependencies = dependencies.concat(pathMatches);
+
+            if (/(.js|.css|.html)/.test(path.extname(targetPath)) === true) {
+                if (defineMatches) {
+                    defineMatches.forEach(function (defineMatch) {
+                        var pathMatches = defineMatch.match(dependencyPathPattern);
+                        if (pathMatches) {
+                            dependencies = dependencies.concat(pathMatches);
+                        }
+                    });
+                }
+                if (requireMatches) {
+                    requireMatches.forEach(function (requireMatch) {
+                        var pathMatches = requireMatch.match(dependencyPathPattern);
+                        if (pathMatches) {
+                            dependencies = dependencies.concat(pathMatches);
+                        }
+                    });
+                }
+
+                if (dependenciesMatches) {
+                    dependenciesMatches.forEach(function (dependenciesMatch) {
+                        var pathMatches = dependenciesMatch.match(dependencyPathPattern);
+                        if (pathMatches) {
+                            dependencies = dependencies.concat(pathMatches);
+                        }
+                    });
+                }
+
+                //如果是main.js中的require.config配置了shim
+                if (targetPath === self.options.require.dataMainPath) {
+                    for (var key in self.config.shim) {
+                        dependencies = dependencies.concat(key);
                     }
-                });
-            }
-            if (requireMatches) {
-                requireMatches.forEach(function (requireMatch) {
-                    var pathMatches = requireMatch.match(dependencyPathPattern);
-                    if (pathMatches) {
-                        dependencies = dependencies.concat(pathMatches);
+                }
+
+                //如果是.js文件，需要判断是不是RouterConfig.js中是否使用了lazy-load机制匹配了要加载的文件
+                if (path.extname(targetPath) === '.js' && /RouterConfig/.test(targetPath)) {
+                    var templateUrlMatches = contents.match(templateUrlPattern);
+                    grunt.log.writeln('templateUrl matches: %s', templateUrlMatches);
+
+                    if (templateUrlMatches) {
+                        templateUrlMatches.forEach(function (templateUrlMatch) {
+                            var pathMatches = templateUrlMatch.match(dependencyPathPattern);
+                            dependencies = dependencies.concat(pathMatches);
+                        });
                     }
-                });
-            }
 
-            if (dependenciesMatches) {
-                dependenciesMatches.forEach(function (dependenciesMatch) {
-                    var pathMatches = dependenciesMatch.match(dependencyPathPattern);
-                    if (pathMatches) {
-                        dependencies = dependencies.concat(pathMatches);
+                    var directivesMatches = contents.match(directivesPattern);
+                    grunt.log.writeln('directives matches: %s', directivesMatches);
+
+                    if (directivesMatches) {
+                        directivesMatches.forEach(function (directivesMatch) {
+                            var pathMatches = directivesMatch.match(dependencyPathPattern);
+                            if (pathMatches) {
+                                dependencies = dependencies.concat(pathMatches);
+                            }
+                        });
                     }
-                });
-            }
 
-            //如果是main.js中的require.config配置了shim
-            if (targetPath === self.options.require.dataMainPath) {
-                for (var key in self.config.shim) {
-                    dependencies = dependencies.concat(key);
+                    var servicesMatches = contents.match(servicesPattern);
+                    grunt.log.writeln('services matches: %s', servicesMatches);
+
+                    if (servicesMatches) {
+                        servicesMatches.forEach(function (servicesMatch) {
+                            var pathMatches = servicesMatch.match(dependencyPathPattern);
+                            if (pathMatches) {
+                                dependencies = dependencies.concat(pathMatches);
+                            }
+                        });
+                    }
+
+                    var controllersMatches = contents.match(controllersPattern);
+                    grunt.log.writeln('controllers matches: %s', controllersMatches);
+
+                    if (controllersMatches) {
+                        controllersMatches.forEach(function (controllersMatch) {
+                            var pathMatches = controllersMatch.match(dependencyPathPattern);
+                            if (pathMatches) {
+                                dependencies = dependencies.concat(pathMatches);
+                            }
+                        });
+                    }
+
+                    var factoriesMatches = contents.match(factoriesPattern);
+                    grunt.log.writeln('factories matches: %s', factoriesMatches);
+
+                    if (factoriesMatches) {
+                        factoriesMatches.forEach(function (factoriesMatch) {
+                            var pathMatches = factoriesMatch.match(dependencyPathPattern);
+                            if (pathMatches) {
+                                dependencies = dependencies.concat(pathMatches);
+                            }
+                        });
+                    }
+
+                    var jsMatches = contents.match(jsPattern);
+                    grunt.log.writeln('js matches: %s', jsMatches);
+
+                    if (jsMatches) {
+                        jsMatches.forEach(function (jsMatch) {
+                            var pathMatches = jsMatch.match(dependencyPathPattern);
+                            if (pathMatches) {
+                                dependencies = dependencies.concat(pathMatches);
+                            }
+                        });
+                    }
                 }
-            }
 
-            //如果是.js文件，需要判断是不是RouterConfig.js中是否使用了lazy-load机制匹配了要加载的文件
-            if (path.extname(targetPath) === '.js' && /RouterConfig/.test(targetPath)) {
-                var templateUrlMatches = contents.match(templateUrlPattern);
-                grunt.log.writeln('templateUrl matches: %s', templateUrlMatches);
-
-                if (templateUrlMatches) {
-                    templateUrlMatches.forEach(function (templateUrlMatch) {
-                        var pathMatches = templateUrlMatch.match(dependencyPathPattern);
-                        dependencies = dependencies.concat(pathMatches);
-                    });
+                if (path.extname(targetPath) === '.js') {
+                    var fileUrlMatches = contents.match(fileUrlPattern);
+                    grunt.log.writeln('fileUrl matches: %s', fileUrlMatches);
+                    if (fileUrlMatches) {
+                        fileUrlMatches.forEach(function (fileUrlMatch) {
+                            var pathMatches = fileUrlMatch.match(dependencyPathPattern);
+                            if (pathMatches) {
+                                dependencies = dependencies.concat(pathMatches);
+                            }
+                        });
+                    }
                 }
 
-                var directivesMatches = contents.match(directivesPattern);
-                grunt.log.writeln('directives matches: %s', directivesMatches);
-
-                if (directivesMatches) {
-                    directivesMatches.forEach(function (directivesMatch) {
-                        var pathMatches = directivesMatch.match(dependencyPathPattern);
-                        if (pathMatches) {
+                //如果是.js,.html,.css文件，需要记录该css文件中动态引入的图片和字符文件
+                //注意如果是.js中引入的css样式中有图片依赖，那么路径必须是以根目录下的子目录为起始路径
+                //e.g: $('<div>').css({"background": "#aaaaaa url('theme/default/images/mask-cover.png') 50% 50% repeat-x"});
+                //不能是e.g: $('<div>').css({"background": "#aaaaaa url('./theme/default/images/mask-cover.png') 50% 50% repeat-x"});
+                if (/(.js|.css|.html|)/.test(path.extname(targetPath)) === true) {
+                    var urlMatches = contents.match(cssUrlPattern);
+                    grunt.log.writeln('url matches: %s', urlMatches);
+                    if (urlMatches) {
+                        urlMatches.forEach(function (urlMatch) {
+                            var pathMatches = urlMatch.match(dependencyPathPattern);
                             dependencies = dependencies.concat(pathMatches);
-                        }
-                    });
+                        });
+                    }
                 }
 
-                var servicesMatches = contents.match(servicesPattern);
-                grunt.log.writeln('services matches: %s', servicesMatches);
+                //如果是html文件，需要记录html文件中动态引入的图片和字符文件
+                if (path.extname(targetPath) === '.html') {
+                    var resourcesMatches = contents.match(resourceUrlPattern);
+                    grunt.log.writeln('resources matches: %s', resourcesMatches);
 
-                if (servicesMatches) {
-                    servicesMatches.forEach(function (servicesMatch) {
-                        var pathMatches = servicesMatch.match(dependencyPathPattern);
-                        if (pathMatches) {
-                            dependencies = dependencies.concat(pathMatches);
-                        }
-                    });
+                    if (resourcesMatches) {
+                        resourcesMatches.forEach(function (resourceMatch) {
+                            var pathMatches = resourceMatch.match(dependencyPathPattern);
+                            if (pathMatches) {
+                                dependencies = dependencies.concat(pathMatches);
+                            }
+                        });
+                    }
                 }
 
-                var controllersMatches = contents.match(controllersPattern);
-                grunt.log.writeln('controllers matches: %s', controllersMatches);
-
-                if (controllersMatches) {
-                    controllersMatches.forEach(function (controllersMatch) {
-                        var pathMatches = controllersMatch.match(dependencyPathPattern);
-                        if (pathMatches) {
-                            dependencies = dependencies.concat(pathMatches);
-                        }
-                    });
+                // remove quotation mark
+                for (var i = 0; i < dependencies.length; i++) {
+                    dependencies[i] = dependencies[i].replace(/'|"/g, '');
                 }
 
-                var factoriesMatches = contents.match(factoriesPattern);
-                grunt.log.writeln('factories matches: %s', factoriesMatches);
-
-                if (factoriesMatches) {
-                    factoriesMatches.forEach(function (factoriesMatch) {
-                        var pathMatches = factoriesMatch.match(dependencyPathPattern);
-                        if (pathMatches) {
-                            dependencies = dependencies.concat(pathMatches);
-                        }
-                    });
-                }
-
-                var jsMatches = contents.match(jsPattern);
-                grunt.log.writeln('js matches: %s', jsMatches);
-
-                if (jsMatches) {
-                    jsMatches.forEach(function (jsMatch) {
-                        var pathMatches = jsMatch.match(dependencyPathPattern);
-                        if (pathMatches) {
-                            dependencies = dependencies.concat(pathMatches);
-                        }
-                    });
+                // remove duplicate dependency path
+                for (var i = 0; i < dependencies.length; i++) {
+                    var target = dependencies[i];
+                    var indexOfNext = dependencies.indexOf(target, i + 1);
+                    if (indexOfNext > 0) {
+                        dependencies.splice(indexOfNext, 1);
+                        i--;
+                    }
                 }
             }
 
-            if (path.extname(targetPath) === '.js') {
-                var fileUrlMatches = contents.match(fileUrlPattern);
-                grunt.log.writeln('fileUrl matches: %s', fileUrlMatches);
-                if (fileUrlMatches) {
-                    fileUrlMatches.forEach(function (fileUrlMatch) {
-                        var pathMatches = fileUrlMatch.match(dependencyPathPattern);
-                        if (pathMatches) {
-                            dependencies = dependencies.concat(pathMatches);
-                        }
-                    });
-                }
-            }
-
-            //如果是.js,.html,.css文件，需要记录该css文件中动态引入的图片和字符文件
-            //注意如果是.js中引入的css样式中有图片依赖，那么路径必须是以根目录下的子目录为起始路径
-            //e.g: $('<div>').css({"background": "#aaaaaa url('theme/default/images/mask-cover.png') 50% 50% repeat-x"});
-            //不能是e.g: $('<div>').css({"background": "#aaaaaa url('./theme/default/images/mask-cover.png') 50% 50% repeat-x"});
-            if (/(.js|.css|.html|)/.test(path.extname(targetPath)) === true) {
-                var urlMatches = contents.match(cssUrlPattern);
-                grunt.log.writeln('url matches: %s', urlMatches);
-                if (urlMatches) {
-                    urlMatches.forEach(function (urlMatch) {
-                        var pathMatches = urlMatch.match(dependencyPathPattern);
-                        dependencies = dependencies.concat(pathMatches);
-                    });
-                }
-            }
-
-            //如果是html文件，需要记录html文件中动态引入的图片和字符文件
-            if (path.extname(targetPath) === '.html') {
-                var resourcesMatches = contents.match(resourceUrlPattern);
-                grunt.log.writeln('resources matches: %s', resourcesMatches);
-
-                if (resourcesMatches) {
-                    resourcesMatches.forEach(function (resourceMatch) {
-                        var pathMatches = resourceMatch.match(dependencyPathPattern);
-                        if (pathMatches) {
-                            dependencies = dependencies.concat(pathMatches);
-                        }
-                    });
-                }
-            }
-
-            // remove quotation mark
-            for (var i = 0; i < dependencies.length; i++) {
-                dependencies[i] = dependencies[i].replace(/'|"/g, '');
-            }
-
-            // remove duplicate dependency path
-            for (var i = 0; i < dependencies.length; i++) {
-                var target = dependencies[i];
-                var indexOfNext = dependencies.indexOf(target, i + 1);
-                if (indexOfNext > 0) {
-                    dependencies.splice(indexOfNext, 1);
-                    i--;
-                }
-            }
             dependenciesMap[targetPath] = {};
             dependenciesMap[targetPath].hashFilePath = targetPath;
             dependenciesMap[targetPath].dependencies = dependencies;
@@ -638,7 +643,9 @@ var deal = function (options, grunt) {
                 targetFiles.splice(indexOfNext, 1);
             }
         }
-        targetFiles.forEach(function (targetFile) {
+        var result = [];
+        self.sortTargetFiles(targetFiles, result);
+        result.forEach(function (targetFile) {
             var result = self.renameHashNameForFile(targetFile);
             for(var i=0; i< result.length; i++) {
                 if(result[i]) {
@@ -646,23 +653,48 @@ var deal = function (options, grunt) {
                 }
             }
         });
+    }
 
-        //处理require data-main, 待优化TODO
-        if (this.options.require.dataMainPath !== null) {
-            try {
-                var dataMainDepObj = this.dependenciesMap[this.options.require.dataMainPath];
-                var accessHtmlDepObj = this.dependenciesMap[this.options.require.accessHtml];
-                var contents = read(accessHtmlDepObj.hashFilePath);
-                write(accessHtmlDepObj.hashFilePath, contents.replace(
-                    new RegExp('(data-main\\s*=\\s*["|\']\\s*)' + '(main)' + '\\s*("|\')', 'ig'),
-                        '$1' + path.basename(dataMainDepObj.hashFilePath, ".js") + '$3'
-                ));
+    //根据依赖顺序进行排序
+    this.sortTargetFiles = function(targetFiles, result) {
+        var flag = false;
+        for(var i=0; i<targetFiles.length; i++) {
+            if(!this.dependenciesMap[targetFiles[i]] ||
+                !this.dependenciesMap[targetFiles[i]].dependencies ||
+                this.dependenciesMap[targetFiles[i]].dependencies.length === 0) {
+                result.push(targetFiles[i]);
+                targetFiles.splice(i, 1);
+                i--;
+                flag = true;
+            } else if(!this.isDependenciesInTargetFiles(targetFiles[i], targetFiles)){
+                result.push(targetFiles[i]);
+                targetFiles.splice(i, 1);
+                i--;
+                flag = true;
             }
-            catch (e) {
-                grunt.fail.warn("modify require.js data-main config fai, e=", e);
+        }
+
+        if(flag) {
+            this.sortTargetFiles(targetFiles, result);
+        } else {
+            for(var i=0; i<targetFiles.length; i++) {
+                result.push(targetFiles[i]);
             }
         }
     }
+
+    this.isDependenciesInTargetFiles = function(fileItem, targetFiles) {
+        console.dir(this.files);
+        for(var i=0; i<targetFiles.length; i++) {
+            var match = this.matchPatternFromArray(fileItem, targetFiles[i]);
+            if(match) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 };
 
 module.exports = function (grunt) {
