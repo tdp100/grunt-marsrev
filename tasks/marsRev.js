@@ -165,7 +165,7 @@ var deal = function (options, grunt) {
 
     var getFiles = function (dir, files_) {
         files_ = files_ || [];
-        if(fs.statSync(dir).isDirectory()) {
+        if(fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
             var files = fs.readdirSync(dir);
             for (var i in files) {
                 var name = '';
